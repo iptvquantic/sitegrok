@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS HUB — Inteligência de Mercado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        :root { --accent: #6366f1; }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .ticker { overflow: hidden; white-space: nowrap; }
+        .ticker-content { display: inline-flex; animation: ticker 60s linear infinite; }
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.4); }
+        .page { display: none; }
+        .page.on { display: block; }
+        .nav-btn.on { border-left: 4px solid var(--accent); background-color: rgba(99, 102, 241, 0.15); }
+        .price-up { color: #22c55e; }
+        .price-down { color: #ef4444; }
+    </style>
+</head>
+<body class="bg-[#0a0a0f] text-[#f1f5f9] min-h-screen">
+    <!-- TICKER -->
+    <div id="ticker" class="bg-[#111118] border-b border-[#22222a] py-2 text-sm overflow-hidden">
+        <div id="ticker-content" class="ticker flex items-center gap-8 text-[#94a3b8]"></div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="bg-[#111118] border-b border-[#22222a] sticky top-0 z-50">
+        <div class="max-w-screen-2xl mx-auto px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center text-white font-bold text-xl">N</div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">NEXUS HUB</h1>
+                    <p class="text-xs text-[#64748b]">Inteligência de Mercado em Tempo Real</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <button onclick="toggleTheme()" class="px-4 py-2 rounded-xl hover:bg-[#1f1f2a] flex items-center gap-2 text-sm">
+                    <i class="fas fa-palette"></i> Temas
+                </button>
+                <button onclick="showAI()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-2xl flex items-center gap-2 text-sm font-medium">
+                    <i class="fas fa-robot"></i> IA
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex" style="height: calc(100vh - 106px)">
+        <!-- SIDEBAR -->
+        <div id="sidebar" class="w-56 bg-[#111118] border-r border-[#22222a] flex-shrink-0 overflow-y-auto">
+            <div class="p-4">
+                <nav class="space-y-1">
+                    <a onclick="goPage('dashboard')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-2xl text-sm cursor-pointer on" data-page="dashboard"><i class="fas fa-home w-5"></i><span>Dashboard</span></a>
+                    <a onclick="goPage('chart')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-2xl text-sm cursor-pointer" data-page="chart"><i class="fas fa-chart-line w-5"></i><span>Gráfico BTC</span></a>
+                    <a onclick="goPage('markets')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-2xl text-sm cursor-pointer" data-page="markets"><i class="fas fa-globe w-5"></i><span>Índices</span></a>
+                    <a onclick="goPage('top100')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-2xl text-sm cursor-pointer" data-page="top100"><i class="fas fa-trophy w-5"></i><span>Top 100</span></a>
+                    <a onclick="goPage('news')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-2xl text-sm cursor-pointer" data-page="news"><i class="fas fa-newspaper w-5"></i><span>Notícias</span></a>
+                    <a onclick="goPage('onchain')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-2xl text-sm cursor-pointer" data-page="onchain"><i class="fas fa-link w-5"></i><span>On-Chain</span></a>
+                    <a onclick="goPage('macro')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-2xl text-sm cursor-pointer" data-page="macro"><i class="fas fa-calendar w-5"></i><span>Macro</span></a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="flex-1 overflow-auto p-6" id="mainContent">
+            <div id="page-dashboard" class="page on">
+                <h2 class="text-3xl font-bold mb-8">Visão Geral do Mercado</h2>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8" id="main-prices"></div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="card bg-[#111118] rounded-3xl p-6">Fear & Greed: <span id="fear-greed" class="text-5xl font-bold">65</span></div>
+                    <div class="card bg-[#111118] rounded-3xl p-6">Market Cap: <span id="market-cap" class="text-4xl font-bold">$2.48T</span></div>
+                </div>
+            </div>
+
+            <div id="page-chart" class="page">
+                <iframe width="100%" height="680" frameborder="0" src="https://www.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&theme=dark"></iframe>
+            </div>
+
+            <!-- Outras páginas -->
+            <div id="page-markets" class="page hidden"><h2 class="text-3xl font-bold">Índices & Câmbio (em breve)</h2></div>
+            <div id="page-top100" class="page hidden"><h2 class="text-3xl font-bold">Top 100 Ativos (em breve)</h2></div>
+            <div id="page-news" class="page hidden"><h2 class="text-3xl font-bold">Notícias (em breve)</h2></div>
+            <div id="page-onchain" class="page hidden"><h2 class="text-3xl font-bold">On-Chain (em breve)</h2></div>
+            <div id="page-macro" class="page hidden"><h2 class="text-3xl font-bold">Macro (em breve)</h2></div>
+        </div>
+    </div>
+
+    <!-- IA BUTTON -->
+    <button onclick="showAI()" class="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-3xl text-4xl shadow-2xl hover:scale-110 transition-all">✨</button>
+
+    <script>
+        let STATE = { coins: [] };
+
+        async function fetchData() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=30');
+                STATE.coins = await res.json();
+                updatePrices();
+                updateTicker();
+            } catch(e) { console.log("API temporariamente indisponível"); }
+        }
+
+        function updatePrices() {
+            const container = document.getElementById('main-prices');
+            container.innerHTML = '';
+            const ids = ['bitcoin','ethereum','solana','ondo-finance','ethena'];
+            STATE.coins.filter(c => ids.includes(c.id)).forEach(coin => {
+                const change = coin.price_change_percentage_24h || 0;
+                const card = document.createElement('div');
+                card.className = `card bg-[#111118] rounded-3xl p-6 border border-[#22222a] cursor-pointer`;
+                card.innerHTML = `
+                    <div class="flex gap-3">
+                        <img src="${coin.image}" class="w-10 h-10 rounded-full">
+                        <div>
+                            <div class="font-bold">${coin.symbol.toUpperCase()}</div>
+                            <div class="text-xl font-mono">$${coin.current_price.toLocaleString()}</div>
+                            <div class="${change>=0?'price-up':'price-down'}">${change.toFixed(1)}%</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateTicker() {
+            const el = document.getElementById('ticker-content');
+            let html = '';
+            STATE.coins.slice(0,15).forEach(c => {
+                html += `<span class="inline-flex items-center gap-2 mx-6"><img src="${c.image}" class="w-4 h-4"> ${c.symbol} $${c.current_price.toFixed(2)} <span class="text-xs ${c.price_change_percentage_24h>0?'text-green-400':'text-red-400'}">${c.price_change_percentage_24h?.toFixed(1)}%</span></span>`;
+            });
+            el.innerHTML = html + html;
+        }
+
+        function goPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+            const page = document.getElementById('page-'+id);
+            if (page) page.classList.add('on');
+        }
+
+        function showAI() {
+            alert("💬 NEXUS IA:\n\nBTC está em tendência de alta. RSI 1D em 58 (neutro). Bom momento para acumular dips.");
+        }
+
+        function toggleTheme() {
+            alert("🌈 Temas adicionais (Cyber, Light, Matrix) em breve.");
+        }
+
+        window.onload = () => {
+            fetchData();
+            setInterval(fetchData, 45000);
+        };
+    </script>
+</body>
+</html>
